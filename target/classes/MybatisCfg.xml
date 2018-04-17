@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 指定数据库连接信息的位置 -->
+    <properties resource="db.properties"></properties>
+    <!--类型别名，默认引入com.zhangguo.Spring61.entities下的所有类 -->
+    <typeAliases>
+        <package name="com.zhangguo.spring.entities"/>
+    </typeAliases>
+    <mappers>
+        <!--引入映射文件 -->
+        <mapper resource="com/zhangguo/spring/mapping/BookTypeMapper.xml" />
+    </mappers>
+</configuration>

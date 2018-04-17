@@ -1,0 +1,68 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd ">
+
+   	<mvc:annotation-driven />
+    <context:component-scan base-package="com.zhangguo.spring.controller" />
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    
+     <context:component-scan base-package="com.zhangguo.spring.manager" />
+
+   <!--  <mvc:resources mapping="/resources/**" location="/resources/" /> -->
+    
+    
+    
+    
+    
+    
+    
+     <!--属性占位文件引入，可以通过${属性名}获得属性文件中的内容-->
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <!--1定义一个jdbc数据源，创建一个驱动管理数据源的bean -->
+    <bean id="jdbcDataSource"
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+
+    <!--2创建一个sql会话工厂bean，指定数据源-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="jdbcDataSource" /><!-- 指定数据源 -->
+        
+         <!-- 2类型别名包，默认引入com.zhangguo.Spring61.entities下的所有类 -->
+        <property name="typeAliasesPackage" value="com.zhangguo.spring.entities"></property>
+         <!-- 3指定sql映射xml文件的路径 -->
+        <property name="mapperLocations"
+            value="classpath:com/zhangguo/spring/mapping/*Mapper.xml"></property>
+    </bean>
+
+	<!--自动扫描映射接口-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 指定sql会话工厂，在上面配置过的 -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+        <!-- 指定基础包，即自动扫描com.zhangguo.Spring61.mapping这个包以及它的子包下的所有映射接口类 -->
+        <property name="basePackage" value="com.zhangguo.spring.mapping"></property>
+    </bean>
+    
+      
+
+
+
+  
+
+</beans>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+类名 -->
+<mapper namespace="com.zhangguo.spring.mapping.BookTypeDAO">
+    <!--id应该是接口中的方法，结果类型如没有配置别名则应该使用全名称 -->
+    <select id="getAllBookTypes" resultType="BookType">
+        select id,typeName from booktypes
+    </select>
+    
+    
+    <!-- 抽取出来的公共部分 -->
+	<sql id="commonSql">
+		<if test="fields.fileTypeLength == 0">
+			`${fields.fieldName}` ${fields.fieldType} 
+		</if>
+		<if test="fields.fileTypeLength == 1">
+			`${fields.fieldName}` ${fields.fieldType}(${fields.fieldLength}) 
+		</if>
+		<if test="fields.fileTypeLength == 2">
+			`${fields.fieldName}`
+			${fields.fieldType}(${fields.fieldLength},${fields.fieldDecimalLength}) 
+		</if>
+		<if test="!fields.fieldIsNull">
+			NOT NULL 
+		</if>
+		<if test="fields.fieldIsAutoIncrement">
+			AUTO_INCREMENT 
+		</if>
+		<!-- 不是自增长的才能有默认值 -->
+		<!-- 并且不为null时，因为null是默认的没必要写 -->
+		<if test="!fields.fieldIsAutoIncrement and fields.fieldDefaultValue != null">
+			DEFAULT #{fields.fieldDefaultValue} 
+		</if>
+	</sql>
+	
+	
+	 <!-- 修改字段名称和属性的公共部门 -->
+	<sql id="ModifyCommonSql">
+		<if test="fields.fileTypeLength == 0">
+			`${fields.fieldName}` `${fields.NewFieldName}` ${fields.fieldType} 
+		</if>
+		<if test="fields.fileTypeLength == 1">
+			`${fields.fieldName}` `${fields.NewFieldName}`  ${fields.fieldType}(${fields.fieldLength}) 
+		</if>
+		<if test="fields.fileTypeLength == 2">
+			`${fields.fieldName}` `${fields.NewFieldName}`
+			${fields.fieldType}(${fields.fieldLength},${fields.fieldDecimalLength}) 
+		</if>
+		<if test="!fields.fieldIsNull">
+			NOT NULL 
+		</if>
+		<if test="fields.fieldIsAutoIncrement">
+			AUTO_INCREMENT 
+		</if>
+		<!-- 不是自增长的才能有默认值 -->
+		<!-- 并且不为null时，因为null是默认的没必要写 -->
+		<if test="!fields.fieldIsAutoIncrement and fields.fieldDefaultValue != null">
+			DEFAULT #{fields.fieldDefaultValue} 
+		</if>
+	</sql>
+
+	<!-- 创建表 -->
+	<select id="createTable" parameterType="java.util.Map">
+
+		<foreach collection="tableMap" index="key" item="value">
+			create table `${key}`(
+			<foreach collection="value" item="fields" separator=",">
+				<include refid="commonSql"></include>
+				<if test="fields.fieldIsKey">
+					,PRIMARY KEY (`${fields.fieldName}`)
+				</if>
+				<if test="fields.fieldIsUnique">
+					,UNIQUE KEY (`${fields.fieldName}`)
+				</if>
+			</foreach>
+			);
+		</foreach>
+
+	</select>
+	
+	<!-- 验证表是否存在 -->
+	<select id="findTableCountByTableName" resultType="int" parameterType="String">
+		select count(1) from information_schema.tables
+		where table_name = #{tableName}
+	</select>
+	
+	<!-- 增加字段 -->
+	<select id="addTableField" parameterType="java.util.Map">
+	
+		<foreach collection="tableMap" index="key" item="fields" separator=";">
+				alter table `${key}` add 
+				<include refid="commonSql"></include>
+				<if test="fields.fieldIsKey">
+					PRIMARY KEY 
+				</if>
+		</foreach>
+		
+	</select>
+	
+	<!-- 删除字段 -->
+	<select id="removeTableField" parameterType="java.util.Map">
+		<foreach collection="tableMap" index="key" item="field" separator=";">
+			alter table `${key}` drop `${field}`
+		</foreach>
+	</select>
+	
+	<!-- 修改字段 -->
+	<select id="modifyTableField" parameterType="java.util.Map">
+	
+		<foreach collection="tableMap" index="key" item="fields" separator=";">
+				alter table `${key}` CHANGE 
+				<include refid="ModifyCommonSql"></include>
+				<if test="fields.fieldIsKey">
+					PRIMARY KEY 
+				</if>
+		</foreach>
+		
+		</select>
+	 <!-- 根据表名删除表 -->	
+	<select id="dorpTableByName" parameterType="String">
+		DROP TABLE IF EXISTS `${tableName}`;
+	</select>
+	
+	<!-- 根据表名查询表的结构 -->
+	
+	<select id="findTableEnsembleByTableName" resultType="com.zhangguo.spring.command.SysMysqlColumns" parameterType="String">
+		select * from information_schema.columns where table_name = #{tableName}
+	</select>
+	
+	
+</mapper>
+
+
